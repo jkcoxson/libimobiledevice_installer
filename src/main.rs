@@ -3,6 +3,8 @@
 use core::panic;
 use std::env;
 use std::process::Command;
+mod package_install;
+use package_install::{brew, linux};
 
 fn main() {
     match env::consts::OS {
@@ -20,19 +22,9 @@ fn main() {
             }
             println!("Homebrew is installed, fetching dependencies");
             // Install openssl if not already installed
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg("\"$(brew install openssl)\"")
-                .status()
-                .expect("Failed to install openssl, aborting");
-
+            brew("openssl");
             // Install pkg-config if not already installed
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg("\"$(brew install pkg-config)\"")
-                .status()
-                .expect("Failed to install pkg-config, aborting");
-            unix_build();
+            brew("pkg-config");
         }
         "linux" => {
             // Get linux distribution as a string
@@ -45,168 +37,57 @@ fn main() {
             // Detect package manager
             let pkg_manager = get_package_manager(distro.to_ascii_lowercase());
             println!("Detected {} package manager", pkg_manager);
+
             // Install git
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install git)\"", pkg_manager))
-                .status()
-                .expect("Failed to install git, aborting");
+            linux(pkg_manager.clone(), "git");
             // Install build-essentials
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!(
-                    "\"$(sudo {} install build-essential)\"",
-                    pkg_manager
-                ))
-                .status()
-                .expect("Failed to install build-essentials, aborting");
+            linux(pkg_manager.clone(), "build-essential");
             // Install glibtool
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install glibtool)\"", pkg_manager))
-                .status()
-                .expect("Failed to install glibtool, aborting");
+            linux(pkg_manager.clone(), "glibtool");
             // Install make
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install make)\"", pkg_manager))
-                .status()
-                .expect("Failed to install make, aborting");
+            linux(pkg_manager.clone(), "make");
             // Install cpp
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install cpp)\"", pkg_manager))
-                .status()
-                .expect("Failed to install cpp, aborting");
+            linux(pkg_manager.clone(), "cpp");
             // Install gcc-8
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install gcc-8)\"", pkg_manager))
-                .status()
-                .expect("Failed to install gcc-8, aborting");
+            linux(pkg_manager.clone(), "gcc-8");
             // Install clang
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install clang)\"", pkg_manager))
-                .status()
-                .expect("Failed to install clang, aborting");
+            linux(pkg_manager.clone(), "clang");
             // Install checkinstall
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install checkinstall)\"", pkg_manager))
-                .status()
-                .expect("Failed to install checkinstall, aborting");
+            linux(pkg_manager.clone(), "checkinstall");
             // Intall autoconf
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install autoconf)\"", pkg_manager))
-                .status()
-                .expect("Failed to install autoconf, aborting");
+            linux(pkg_manager.clone(), "autoconf");
             // Install automake
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install automake)\"", pkg_manager))
-                .status()
-                .expect("Failed to install automake, aborting");
+            linux(pkg_manager.clone(), "automake");
             // Install libtool
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libtool)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libtool, aborting");
+            linux(pkg_manager.clone(), "libtool");
             // Install m4
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install m4)\"", pkg_manager))
-                .status()
-                .expect("Failed to install m4, aborting");
+            linux(pkg_manager.clone(), "m4");
             // Install python-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install python-dev)\"", pkg_manager))
-                .status()
-                .expect("Failed to install python-dev, aborting");
+            linux(pkg_manager.clone(), "python-dev");
             // Install pkg-config
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install pkg-config)\"", pkg_manager))
-                .status()
-                .expect("Failed to install pkg-config, aborting");
+            linux(pkg_manager.clone(), "pkg-config");
             // Install libavahi-client-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!(
-                    "\"$(sudo {} install libavahi-client-dev)\"",
-                    pkg_manager
-                ))
-                .status()
-                .expect("Failed to install libavahi-client-dev, aborting");
+            linux(pkg_manager.clone(), "libavahi-client-dev");
             // Install cython
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install cython)\"", pkg_manager))
-                .status()
-                .expect("Failed to install cython, aborting");
+            linux(pkg_manager.clone(), "cython");
             // Install autoheader
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install autoheader)\"", pkg_manager))
-                .status()
-                .expect("Failed to install autoheader, aborting");
+            linux(pkg_manager.clone(), "autoheader");
             // Install libusb-1.0-0-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!(
-                    "\"$(sudo {} install libusb-1.0-0-dev)\"",
-                    pkg_manager
-                ))
-                .status()
-                .expect("Failed to install libusb-1.0-0-dev, aborting");
+            linux(pkg_manager.clone(), "libusb-1.0-0-dev");
             // Install libssl-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libssl-dev)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libssl-dev, aborting");
+            linux(pkg_manager.clone(), "libssl-dev");
             // Install libc6-udeb
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libc6-udeb)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libc6-udeb, aborting");
+            linux(pkg_manager.clone(), "libc6-udeb");
             // Install libc6-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libc6-dev)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libc6-dev, aborting");
+            linux(pkg_manager.clone(), "libc6-dev");
             // Install libtool-bin
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libtool-bin)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libtool-bin, aborting");
+            linux(pkg_manager.clone(), "libtool-bin");
             // Install libplist++-dev
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!(
-                    "\"$(sudo {} install libplist++-dev)\"",
-                    pkg_manager
-                ))
-                .status()
-                .expect("Failed to install libplist++-dev, aborting");
+            linux(pkg_manager.clone(), "libplist++-dev");
             // Install libplist++
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install libplist++)\"", pkg_manager))
-                .status()
-                .expect("Failed to install libplist++, aborting");
+            linux(pkg_manager.clone(), "libplist++");
             // Install openssl
-            Command::new("/bin/bash")
-                .arg("-c")
-                .arg(format!("\"$(sudo {} install openssl)\"", pkg_manager))
-                .status()
-                .expect("Failed to install openssl, aborting");
+            linux(pkg_manager.clone(), "openssl");
             unix_build();
         }
         _ => panic!("Unsupported operating system"),
