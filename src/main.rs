@@ -1,14 +1,55 @@
 // jkcoxson
 
 use core::panic;
-use std::env;
+use std::fs::File;
+use std::io;
 use std::process::Command;
+use std::{collections::HashMap, env};
 mod package_install;
 use package_install::{brew, linux};
 
+use dialoguer::{theme::ColorfulTheme, Select};
+
 fn main() {
     match env::consts::OS {
-        "windows" => todo!("Windows support is WIP"),
+        "windows" => {
+            // Change directory to home
+            Command::new("powershell")
+                .arg("cd")
+                .arg("~")
+                .output()
+                .expect("Failed to change directory");
+
+            // Curl libimobiledevice
+            Command::new("powershell")
+                .arg("curl")
+                .arg("https://github.com/libimobiledevice-win32/imobiledevice-net/releases/download/v1.3.17/libimobiledevice.1.2.1-r1122-win-x64.zip")
+                .arg("-o")
+                .arg("libimobiledevice.zip")
+                .output()
+                .expect("Failed to fetch necessary files");
+
+            // Unzip libimobiledevice
+            Command::new("powershell")
+                .arg("unzip")
+                .arg("libimobiledevice.zip")
+                .output()
+                .expect("Failed to unzip libimobiledevice");
+
+            // Remove libimobiledevice.zip
+            Command::new("powershell")
+                .arg("rm")
+                .arg("libimobiledevice.zip")
+                .output()
+                .expect("Failed to remove libimobiledevice.zip");
+
+            // Change directory to libimobiledevice
+            Command::new("powershell")
+                .arg("cd")
+                .arg("libimobiledevice")
+                .output()
+                .expect("Failed to change directory");
+        }
         "macos" => {
             // Detect if brew is installed
             if !env::var("HOMEBREW_PREFIX").is_ok() {
@@ -25,6 +66,22 @@ fn main() {
             brew("openssl");
             // Install pkg-config if not already installed
             brew("pkg-config");
+            unix_build();
+            let (version, link) = get_ios_version();
+            // Download DMG from link
+            let mut resp = reqwest::blocking::get(link).expect("Unable to download DMG");
+            let mut out = File::create("dmg.zip").expect("Failed to create zip");
+            io::copy(&mut resp, &mut out).expect("failed to copy content");
+            // Unzip DMG
+            Command::new("unzip")
+                .arg("dmg.zip")
+                .output()
+                .expect("Failed to unzip DMG");
+            // Remove DMG zip
+            Command::new("rm")
+                .arg("dmg.zip")
+                .output()
+                .expect("Failed to remove DMG");
         }
         "linux" => {
             // Get linux distribution as a string
@@ -71,6 +128,8 @@ fn main() {
         }
         _ => panic!("Unsupported operating system"),
     }
+
+    println!("For the next steps, refer to https://jkcoxson.github.io/DiOS-Instructions/");
 }
 
 /// Builds libimobiledevice after the dependencies have been installed
@@ -209,4 +268,35 @@ fn get_package_manager(os: String) -> String {
         _ => panic!("Unsupported operating system"),
     }
     .to_string()
+}
+
+/// Returns the iOS version as a string, as well as the link to the dev DMG
+fn get_ios_version() -> (String, String) {
+    // Download the iOS dictionary from GitHub
+    println!("Downloading iOS dictionary...");
+    let url = "https://raw.githubusercontent.com/jkcoxson/DiOS-Instructions/main/versions.list";
+    let response = reqwest::blocking::get(url).expect("Failed to download iOS version library");
+    let contents = response.text().expect("Failed to read iOS version library");
+    let splitln = contents.split("\n");
+    let mut dict = HashMap::new();
+    for line in splitln {
+        let mut split = line.split("::");
+        let version = split.next().unwrap().trim().to_string();
+        let url = split.next().unwrap().trim().to_string();
+        dict.insert(version, url);
+    }
+
+    let versions = dict.keys().collect::<Vec<&String>>();
+
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Select your iOS version")
+        .default(0)
+        .items(&versions[..])
+        .interact()
+        .unwrap();
+
+    let version = versions[selection].to_string();
+    let link = dict.get(versions[selection]).unwrap().to_string();
+
+    return (version, link);
 }
