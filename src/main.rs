@@ -34,60 +34,39 @@ fn main() {
                 .expect("Failed to get linux distribution, aborting");
             let distro = String::from_utf8(distro.stdout)
                 .expect("Failed to get linux distribution, aborting");
+
             // Detect package manager
             let pkg_manager = get_package_manager(distro.to_ascii_lowercase());
             println!("Detected {} package manager", pkg_manager);
 
-            // Install git
+            // Install dependencies
             linux(pkg_manager.clone(), "git");
-            // Install build-essentials
             linux(pkg_manager.clone(), "build-essential");
-            // Install glibtool
             linux(pkg_manager.clone(), "glibtool");
-            // Install make
             linux(pkg_manager.clone(), "make");
-            // Install cpp
             linux(pkg_manager.clone(), "cpp");
-            // Install gcc-8
             linux(pkg_manager.clone(), "gcc-8");
-            // Install clang
             linux(pkg_manager.clone(), "clang");
-            // Install checkinstall
             linux(pkg_manager.clone(), "checkinstall");
-            // Intall autoconf
             linux(pkg_manager.clone(), "autoconf");
-            // Install automake
             linux(pkg_manager.clone(), "automake");
-            // Install libtool
             linux(pkg_manager.clone(), "libtool");
-            // Install m4
             linux(pkg_manager.clone(), "m4");
-            // Install python-dev
             linux(pkg_manager.clone(), "python-dev");
-            // Install pkg-config
             linux(pkg_manager.clone(), "pkg-config");
-            // Install libavahi-client-dev
             linux(pkg_manager.clone(), "libavahi-client-dev");
-            // Install cython
             linux(pkg_manager.clone(), "cython");
-            // Install autoheader
             linux(pkg_manager.clone(), "autoheader");
-            // Install libusb-1.0-0-dev
             linux(pkg_manager.clone(), "libusb-1.0-0-dev");
-            // Install libssl-dev
             linux(pkg_manager.clone(), "libssl-dev");
-            // Install libc6-udeb
             linux(pkg_manager.clone(), "libc6-udeb");
-            // Install libc6-dev
             linux(pkg_manager.clone(), "libc6-dev");
-            // Install libtool-bin
             linux(pkg_manager.clone(), "libtool-bin");
-            // Install libplist++-dev
             linux(pkg_manager.clone(), "libplist++-dev");
-            // Install libplist++
             linux(pkg_manager.clone(), "libplist++");
-            // Install openssl
             linux(pkg_manager.clone(), "openssl");
+
+            // Build and install libimobiledevice
             unix_build();
         }
         _ => panic!("Unsupported operating system"),
